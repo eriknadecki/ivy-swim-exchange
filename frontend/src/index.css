@@ -1,0 +1,329 @@
+:root {
+  --text: #3f3d45;
+  --text-h: #0b0a0d;
+  --text-muted: #7a7885;
+  --bg: #ffffff;
+  --bg-subtle: #f7f7f9;
+  --border: #e3e2e6;
+  --accent: #6d28d9;
+  --accent-contrast: #ffffff;
+  --success: #15803d;
+  --danger: #b91c1c;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #d4d2da;
+    --text-h: #f5f4f7;
+    --text-muted: #8f8d99;
+    --bg: #131217;
+    --bg-subtle: #1b1a21;
+    --border: #2c2a33;
+    --accent: #a78bfa;
+    --accent-contrast: #131217;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: 15px/1.5 var(--sans);
+  color: var(--text);
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-h);
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-size: 26px;
+}
+h2 {
+  font-size: 18px;
+  margin-top: 24px;
+}
+h3 {
+  font-size: 15px;
+}
+
+p {
+  margin: 0 0 8px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.success {
+  color: var(--success);
+}
+
+button {
+  font: inherit;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 320px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+th,
+td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-weight: 700;
+  color: var(--text-h);
+}
+.topbar nav {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.balance-pill {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+.username {
+  color: var(--text-muted);
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.auth-card {
+  max-width: 360px;
+  margin: 40px auto;
+}
+
+.market-group-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-subtle);
+}
+
+.market-list,
+.meet-list,
+.ticker-feed {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.market-list li,
+.meet-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.market-list li:last-child,
+.meet-list li:last-child {
+  border-bottom: none;
+}
+
+.status-badge {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.status-open {
+  color: var(--success);
+  border-color: var(--success);
+}
+.status-resolved {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.resolved-banner {
+  background: var(--bg-subtle);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-h);
+}
+
+.market-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.order-book {
+  display: flex;
+  gap: 16px;
+}
+.book-side {
+  flex: 1;
+}
+.book-asks td:first-child {
+  color: var(--danger);
+}
+.book-bids td:first-child {
+  color: var(--success);
+}
+
+.market-side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-form {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--bg-subtle);
+}
+.order-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.order-form-row label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.trade-feed ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.my-orders {
+  margin-top: 24px;
+}
+
+.balance-summary {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+.balance-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.balance-summary strong {
+  font-size: 20px;
+  color: var(--text-h);
+}
+
+.admin-section {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ticker-feed li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ticker-time {
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  margin-right: 8px;
+}

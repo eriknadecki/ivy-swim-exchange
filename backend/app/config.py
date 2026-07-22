@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 30
     starting_balance_cents: int = 1_000_000
+    cors_allow_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 
 settings = Settings()

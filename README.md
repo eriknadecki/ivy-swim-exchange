@@ -4,8 +4,8 @@ Kalshi-style prediction market for Ivy League swimming — order-book trading wi
 virtual currency on markets like "Will Princeton beat Harvard?" or "Who wins the
 Ivy League Championship?", fed by manual live meet updates during the season.
 
-See `backend/` for the FastAPI + matching engine service. A `frontend/` React app
-will be added starting at milestone M6 (see the project plan).
+See `backend/` for the FastAPI + matching engine service and `frontend/` for the
+React + TypeScript trading UI.
 
 ## Backend setup
 
@@ -24,7 +24,29 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-Health check: `GET http://127.0.0.1:8000/health`
+Health check: `GET http://127.0.0.1:8000/health` · API docs: `http://127.0.0.1:8000/docs`
+
+To get a starting admin account and an invite code for signing up friends:
+
+```
+cd backend
+python scripts/create_admin.py you@example.com yourname yourpassword
+```
+
+## Frontend setup
+
+Run this in a second terminal, alongside the backend:
+
+```
+cd frontend
+npm install
+copy .env.example .env          # points at the backend; defaults to http://127.0.0.1:8000
+npm run dev
+```
+
+Open `http://localhost:5173`. Sign up with the invite code from `create_admin.py`
+above (either paste it into the signup form, or visit
+`http://localhost:5173/signup?code=YOUR_CODE`).
 
 ## Tests
 
@@ -32,4 +54,10 @@ Health check: `GET http://127.0.0.1:8000/health`
 cd backend
 pytest -q
 ruff check .
+```
+
+```
+cd frontend
+npx tsc -b
+npm run lint
 ```

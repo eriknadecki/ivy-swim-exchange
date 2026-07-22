@@ -2,6 +2,8 @@ import uuid
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.db.models import UserRole
+
 
 class SignupRequest(BaseModel):
     invite_code: str
@@ -29,5 +31,6 @@ class UserOut(BaseModel):
     id: uuid.UUID
     email: str
     username: str
+    role: UserRole
 
     model_config = {"from_attributes": True}
