@@ -1,13 +1,29 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import require_admin
-from app.db.models import User
+from app.db.models import MarketGroup, User
 from app.db.session import get_db
 from app.schemas.invite import CreateInviteRequest, InviteOut
-from app.services import auth_service
+from app.schemas.market import CreateMarketGroupRequest, MarketGroupOut
+from app.services import auth_service, market_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.post("/market-groups", response_model=MarketGroupOut, status_code=status.HTTP_201_CREATED)
+def create_market_group(
+    payload: CreateMarketGroupRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> MarketGroup:
+    return market_service.create_market_group(
+        db,
+        title=payload.title,
+        description=payload.description,
+        outcomes=payload.outcomes,
+        close_at=payload.close_at,
+    )
 
 
 @router.post("/invites", response_model=InviteOut)

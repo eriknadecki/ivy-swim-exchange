@@ -27,6 +27,21 @@ def get_house_account(db: Session) -> Account:
     return account
 
 
+def get_market_escrow_account(db: Session, market_id: uuid.UUID) -> Account:
+    account = db.execute(
+        select(Account).where(
+            Account.owner_type == AccountOwnerType.market_escrow, Account.owner_id == market_id
+        )
+    ).scalar_one_or_none()
+    if account is None:
+        account = Account(
+            owner_type=AccountOwnerType.market_escrow, owner_id=market_id, cash_balance_cents=0
+        )
+        db.add(account)
+        db.flush()
+    return account
+
+
 def post_entry_group(db: Session, entries: list[LedgerEntryInput]) -> uuid.UUID:
     """Atomically apply a set of balanced ledger entries.
 

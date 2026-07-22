@@ -12,3 +12,15 @@ class UserAlreadyExistsError(ServiceError):
 
 class InvalidCredentialsError(ServiceError):
     pass
+
+
+class InsufficientFundsError(ServiceError):
+    pass
+
+
+class MarketNotTradableError(ServiceError):
+    pass
+
+
+class NotFoundError(ServiceError):
+    pass

@@ -3,10 +3,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
-from app.db.models import Account, User
+from app.db.models import Account, AccountOwnerType, Position, User
 from app.db.session import get_db
 from app.schemas.account import BalanceOut
 from app.schemas.auth import UserOut
+from app.schemas.order import PositionOut
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -20,9 +21,22 @@ def get_me(user: User = Depends(get_current_user)) -> User:
 def get_balance(
     user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> BalanceOut:
-    account = db.execute(select(Account).where(Account.owner_id == user.id)).scalar_one()
+    account = db.execute(
+        select(Account).where(
+            Account.owner_type == AccountOwnerType.user, Account.owner_id == user.id
+        )
+    ).scalar_one()
     return BalanceOut(
         cash_balance_cents=account.cash_balance_cents,
         held_collateral_cents=account.held_collateral_cents,
         available_cents=account.cash_balance_cents - account.held_collateral_cents,
+    )
+
+
+@router.get("/positions", response_model=list[PositionOut])
+def get_positions(
+    user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> list[Position]:
+    return list(
+        db.execute(select(Position).where(Position.user_id == user.id)).scalars().all()
     )

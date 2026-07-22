@@ -8,8 +8,21 @@ from sqlalchemy.orm import Session
 from app.core.security import TokenType, decode_token
 from app.db.models import User, UserRole
 from app.db.session import get_db
+from engine.engine import MatchingEngine
 
 bearer_scheme = HTTPBearer()
+
+# One matching engine for the process lifetime: order books are in-memory,
+# so every request must share this instance rather than getting a fresh
+# (empty) engine each time. Known MVP limitation: book state does not
+# survive a process restart — recovering it from the `orders` table on
+# startup is future work, not needed until this runs somewhere that restarts
+# under live trading.
+_matching_engine = MatchingEngine()
+
+
+def get_engine() -> MatchingEngine:
+    return _matching_engine
 
 
 def get_current_user(

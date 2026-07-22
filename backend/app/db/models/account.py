@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Integer, func
+from sqlalchemy import CheckConstraint, DateTime, Enum, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,7 +36,10 @@ class Account(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     owner_type: Mapped[AccountOwnerType] = mapped_column(Enum(AccountOwnerType, name="account_owner_type"))
-    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, unique=True)
+    # Polymorphic reference interpreted via owner_type (a user id for
+    # owner_type='user', a market id for 'market_escrow', NULL for 'house') —
+    # same pattern as ledger_entries.reference_id, so no single-table FK fits.
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, unique=True)
     cash_balance_cents: Mapped[int] = mapped_column(Integer, default=0)
     held_collateral_cents: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
