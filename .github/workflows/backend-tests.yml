@@ -1,0 +1,45 @@
+name: backend-tests
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ivyswim
+          POSTGRES_PASSWORD: ivyswim
+          POSTGRES_DB: ivyswim
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ivyswim"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+psycopg://ivyswim:ivyswim@localhost:5432/ivyswim
+      - run: pytest -q
+        env:
+          DATABASE_URL: postgresql+psycopg://ivyswim:ivyswim@localhost:5432/ivyswim
