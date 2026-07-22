@@ -24,3 +24,7 @@ class MarketNotTradableError(ServiceError):
 
 class NotFoundError(ServiceError):
     pass
+
+
+class AlreadyResolvedError(ServiceError):
+    pass

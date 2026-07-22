@@ -11,6 +11,12 @@ class CreateMarketGroupRequest(BaseModel):
     description: str | None = None
     outcomes: list[str] = Field(min_length=1, max_length=32)
     close_at: datetime | None = None
+    meet_id: uuid.UUID | None = None
+    meet_event_id: uuid.UUID | None = None
+
+
+class ResolveMarketGroupRequest(BaseModel):
+    winning_market_id: uuid.UUID
 
 
 class MarketOut(BaseModel):
@@ -28,6 +34,8 @@ class MarketGroupOut(BaseModel):
     description: str | None
     status: MarketGroupStatus
     close_at: datetime | None
+    meet_id: uuid.UUID | None
+    meet_event_id: uuid.UUID | None
     markets: list[MarketOut]
 
     model_config = {"from_attributes": True}

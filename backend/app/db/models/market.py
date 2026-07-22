@@ -33,6 +33,10 @@ class MarketGroup(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    meet_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("meets.id"), nullable=True)
+    meet_event_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("meet_events.id"), nullable=True
+    )
     close_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[MarketGroupStatus] = mapped_column(
         Enum(MarketGroupStatus, name="market_group_status"), default=MarketGroupStatus.open

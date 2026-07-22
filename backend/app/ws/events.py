@@ -55,3 +55,31 @@ def publish_balance_update(user_id: uuid.UUID, cash_balance_cents: int, availabl
             "available_cents": available_cents,
         },
     )
+
+
+def publish_market_resolved(
+    market_id: uuid.UUID, market_group_id: uuid.UUID, winning_market_id: uuid.UUID, resolved_outcome: str
+) -> None:
+    manager.broadcast(
+        f"market:{market_id}",
+        {
+            "type": "market_resolved",
+            "market_id": str(market_id),
+            "market_group_id": str(market_group_id),
+            "winning_market_id": str(winning_market_id),
+            "resolved_outcome": resolved_outcome,
+        },
+    )
+
+
+def publish_ticker_update(meet_id: uuid.UUID, meet_event_id: uuid.UUID | None, body: str, created_at: datetime) -> None:
+    manager.broadcast(
+        f"meet:{meet_id}:ticker",
+        {
+            "type": "ticker_update",
+            "meet_id": str(meet_id),
+            "meet_event_id": str(meet_event_id) if meet_event_id else None,
+            "body": body,
+            "created_at": created_at.isoformat(),
+        },
+    )

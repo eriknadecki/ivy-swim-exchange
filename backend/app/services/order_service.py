@@ -3,8 +3,9 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import Account, AccountOwnerType, LedgerEntryType, Market, MarketStatus, Order, Position, Trade
+from app.db.models import LedgerEntryType, Market, MarketStatus, Order, Position, Trade
 from app.services import ledger_service
+from app.services.account_service import get_user_account
 from app.services.errors import InsufficientFundsError, MarketNotTradableError, NotFoundError
 from app.services.ledger_service import LedgerEntryInput
 from app.services.position_math import PositionState, apply_fill
@@ -51,22 +52,8 @@ def _normalized_terms(order: Order) -> tuple[Action, int]:
     return normalized.action, price
 
 
-def _get_user_account(db: Session, user_id: uuid.UUID) -> Account:
-    return db.execute(
-        select(Account)
-        .where(Account.owner_type == AccountOwnerType.user, Account.owner_id == user_id)
-        .with_for_update()
-    ).scalar_one()
-
-
-def _get_user_account_readonly(db: Session, user_id: uuid.UUID) -> Account:
-    return db.execute(
-        select(Account).where(Account.owner_type == AccountOwnerType.user, Account.owner_id == user_id)
-    ).scalar_one()
-
-
 def _publish_order_and_balance(db: Session, order: Order) -> None:
-    account = _get_user_account_readonly(db, order.user_id)
+    account = get_user_account(db, order.user_id, for_update=False)
     ws_events.publish_order_update(order.user_id, order.id, order.status.value, order.filled_quantity)
     ws_events.publish_balance_update(
         order.user_id, account.cash_balance_cents, account.cash_balance_cents - account.held_collateral_cents
@@ -122,7 +109,7 @@ def submit_order(
     normalized_action, own_price = _normalized_terms(order_row)
     required = _unit_collateral(normalized_action, own_price) * quantity
 
-    account = _get_user_account(db, user_id)
+    account = get_user_account(db, user_id)
     available = account.cash_balance_cents - account.held_collateral_cents
     if available < required:
         raise InsufficientFundsError(f"order requires {required} cents, only {available} available")
@@ -183,7 +170,7 @@ def _settle_fill(db: Session, market: Market, taker_order: Order, fill: Fill) ->
 
     for order in (taker_order, maker_order):
         normalized_action, own_price = _normalized_terms(order)
-        account = _get_user_account(db, order.user_id)
+        account = get_user_account(db, order.user_id)
 
         # Release this order's own pre-trade hold for the filled quantity,
         # then move the *actual* collateral for that quantity — priced at
@@ -262,7 +249,7 @@ def cancel_order(db: Session, engine: MatchingEngine, *, user_id: uuid.UUID, ord
 
     result = engine.cancel_order(str(order_row.market_id), order_id)
     if result.status == OrderStatus.cancelled:
-        account = _get_user_account(db, user_id)
+        account = get_user_account(db, user_id)
         account.held_collateral_cents -= order_row.collateral_cents
         order_row.collateral_cents = 0
         order_row.status = OrderStatus.cancelled
