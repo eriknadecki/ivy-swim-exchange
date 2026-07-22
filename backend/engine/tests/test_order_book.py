@@ -163,7 +163,7 @@ def test_fok_order_cancels_entirely_when_liquidity_insufficient():
 
     assert result.status == OrderStatus.cancelled
     assert result.fills == []
-    assert result.remaining_quantity == 10
+    assert result.remaining_quantity == 0  # nothing rests; a cancelled order leaves nothing working
     # The resting order must be untouched — FOK never partially executes.
     assert book.best_ask() == 60
     assert book.snapshot().asks[0].total_quantity == 3

@@ -92,7 +92,10 @@ class OrderBook:
             # clears this precheck because of same-owner liquidity can still
             # come back partially filled.
             if self._available_quantity(order.action, limit_price) < order.quantity:
-                return OrderResult(order.order_id, OrderStatus.cancelled, [], order.quantity)
+                # remaining_quantity is "still resting," not "unfilled" — a
+                # cancelled order rests nothing, so this must be 0 for the
+                # same reason every other terminal/non-resting path below is.
+                return OrderResult(order.order_id, OrderStatus.cancelled, [], 0)
 
         fills = self._match(order, limit_price)
         filled_qty = sum(fill.quantity for fill in fills)
