@@ -8,6 +8,7 @@ from app.services import ledger_service
 from app.services.errors import InsufficientFundsError, MarketNotTradableError, NotFoundError
 from app.services.ledger_service import LedgerEntryInput
 from app.services.position_math import PositionState, apply_fill
+from app.ws import events as ws_events
 from engine.engine import MatchingEngine
 from engine.normalization import normalize_new_order
 from engine.types import (
@@ -56,6 +57,20 @@ def _get_user_account(db: Session, user_id: uuid.UUID) -> Account:
         .where(Account.owner_type == AccountOwnerType.user, Account.owner_id == user_id)
         .with_for_update()
     ).scalar_one()
+
+
+def _get_user_account_readonly(db: Session, user_id: uuid.UUID) -> Account:
+    return db.execute(
+        select(Account).where(Account.owner_type == AccountOwnerType.user, Account.owner_id == user_id)
+    ).scalar_one()
+
+
+def _publish_order_and_balance(db: Session, order: Order) -> None:
+    account = _get_user_account_readonly(db, order.user_id)
+    ws_events.publish_order_update(order.user_id, order.id, order.status.value, order.filled_quantity)
+    ws_events.publish_balance_update(
+        order.user_id, account.cash_balance_cents, account.cash_balance_cents - account.held_collateral_cents
+    )
 
 
 def _get_or_create_position(db: Session, user_id: uuid.UUID, market_id: uuid.UUID) -> Position:
@@ -130,8 +145,7 @@ def submit_order(
     )
     result = engine.submit_order(engine_order)
 
-    for fill in result.fills:
-        _settle_fill(db, market, order_row, fill)
+    maker_orders = [_settle_fill(db, market, order_row, fill) for fill in result.fills]
 
     order_row.filled_quantity = sum(fill.quantity for fill in result.fills)
     order_row.status = result.status
@@ -142,10 +156,24 @@ def submit_order(
 
     db.commit()
     db.refresh(order_row)
+
+    # Broadcast only after a successful commit — never announce state that
+    # could still have been rolled back.
+    _publish_order_and_balance(db, order_row)
+    seen_makers: set[uuid.UUID] = set()
+    for maker_order, fill in zip(maker_orders, result.fills):
+        ws_events.publish_trade(market.id, fill.price_cents, fill.quantity)
+        if maker_order.id not in seen_makers:
+            db.refresh(maker_order)
+            _publish_order_and_balance(db, maker_order)
+            seen_makers.add(maker_order.id)
+    if result.fills or result.status in (OrderStatus.open, OrderStatus.partially_filled):
+        ws_events.publish_book_update(market.id, engine.get_book_snapshot(str(market.id)))
+
     return order_row
 
 
-def _settle_fill(db: Session, market: Market, taker_order: Order, fill: Fill) -> None:
+def _settle_fill(db: Session, market: Market, taker_order: Order, fill: Fill) -> Order:
     maker_order = db.get(Order, fill.maker_order_id, with_for_update=True)
     if maker_order is None:
         raise NotFoundError(f"maker order {fill.maker_order_id} not found")
@@ -221,6 +249,8 @@ def _settle_fill(db: Session, market: Market, taker_order: Order, fill: Fill) ->
     else:
         maker_order.status = OrderStatus.partially_filled
 
+    return maker_order
+
 
 def cancel_order(db: Session, engine: MatchingEngine, *, user_id: uuid.UUID, order_id: uuid.UUID) -> Order:
     order_row = db.get(Order, order_id, with_for_update=True)
@@ -239,4 +269,9 @@ def cancel_order(db: Session, engine: MatchingEngine, *, user_id: uuid.UUID, ord
 
     db.commit()
     db.refresh(order_row)
+
+    if result.status == OrderStatus.cancelled:
+        _publish_order_and_balance(db, order_row)
+        ws_events.publish_book_update(order_row.market_id, engine.get_book_snapshot(str(order_row.market_id)))
+
     return order_row
