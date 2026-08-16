@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
@@ -23,7 +23,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def _create_token(user_id: uuid.UUID, token_type: TokenType, expires_delta: timedelta) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": str(user_id),
         "type": token_type.value,

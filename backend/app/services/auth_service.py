@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ def _get_valid_invite(db: Session, code: str) -> Invite:
     ).scalar_one_or_none()
     if invite is None:
         raise InviteInvalidError("Invite code not found")
-    if invite.expires_at is not None and invite.expires_at < datetime.now(timezone.utc):
+    if invite.expires_at is not None and invite.expires_at < datetime.now(UTC):
         raise InviteInvalidError("Invite code has expired")
     if invite.uses_count >= invite.max_uses:
         raise InviteInvalidError("Invite code has already been used")
@@ -37,7 +37,7 @@ def check_invite(db: Session, code: str) -> str | None:
 
 def create_invite(db: Session, created_by_user_id: uuid.UUID, max_uses: int, expires_in_days: int | None) -> Invite:
     expires_at = (
-        datetime.now(timezone.utc) + timedelta(days=expires_in_days) if expires_in_days else None
+        datetime.now(UTC) + timedelta(days=expires_in_days) if expires_in_days else None
     )
     invite = Invite(
         code=secrets.token_urlsafe(8),

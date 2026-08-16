@@ -14,7 +14,16 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from engine.order_book import OrderBook
-from engine.types import PRICE_MAX, PRICE_MIN, Action, NewOrder, OrderStatus, OrderType, Side, TimeInForce
+from engine.types import (
+    PRICE_MAX,
+    PRICE_MIN,
+    Action,
+    NewOrder,
+    OrderStatus,
+    OrderType,
+    Side,
+    TimeInForce,
+)
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import uuid
+from collections.abc import Hashable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Hashable
 
 PRICE_MIN = 1
 PRICE_MAX = 99

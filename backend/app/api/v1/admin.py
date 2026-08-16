@@ -7,7 +7,12 @@ from app.core.deps import get_engine, require_admin
 from app.db.models import Market, MarketGroup, Meet, MeetEvent, Team, TickerUpdate, User
 from app.db.session import get_db
 from app.schemas.invite import CreateInviteRequest, InviteOut
-from app.schemas.market import CreateMarketGroupRequest, MarketGroupOut, MarketOut, ResolveMarketGroupRequest
+from app.schemas.market import (
+    CreateMarketGroupRequest,
+    MarketGroupOut,
+    MarketOut,
+    ResolveMarketGroupRequest,
+)
 from app.schemas.meet import (
     CreateMeetEventRequest,
     CreateMeetRequest,
@@ -17,7 +22,13 @@ from app.schemas.meet import (
     TickerUpdateOut,
 )
 from app.schemas.team import CreateTeamRequest, TeamOut
-from app.services import auth_service, market_service, meet_service, resolution_service, ticker_service
+from app.services import (
+    auth_service,
+    market_service,
+    meet_service,
+    resolution_service,
+    ticker_service,
+)
 from app.services.errors import AlreadyResolvedError, NotFoundError, ServiceError
 from engine.engine import MatchingEngine
 

@@ -5,17 +5,17 @@ from engine.types import Action, NewOrder, OrderType, Side, TimeInForce
 
 
 def _order(**overrides) -> NewOrder:
-    defaults = dict(
-        market_id="m",
-        owner_id="alice",
-        side=Side.yes,
-        action=Action.buy,
-        order_type=OrderType.limit,
-        quantity=5,
-        price_cents=45,
-        time_in_force=TimeInForce.gtc,
-        order_id=uuid.uuid4(),
-    )
+    defaults = {
+        "market_id": "m",
+        "owner_id": "alice",
+        "side": Side.yes,
+        "action": Action.buy,
+        "order_type": OrderType.limit,
+        "quantity": 5,
+        "price_cents": 45,
+        "time_in_force": TimeInForce.gtc,
+        "order_id": uuid.uuid4(),
+    }
     defaults.update(overrides)
     return NewOrder(**defaults)
 

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -40,7 +40,7 @@ def resolve_market_group(
     if not any(market.id == winning_market_id for market in markets):
         raise NotFoundError("winning market is not part of this group")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for market in markets:
         _cancel_open_orders(db, engine, market)
 

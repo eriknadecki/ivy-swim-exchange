@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.ws.manager import manager
 from engine.types import BookSnapshot
@@ -28,7 +28,7 @@ def publish_trade(market_id: uuid.UUID, price_cents: int, quantity: int) -> None
             "market_id": str(market_id),
             "price_cents": price_cents,
             "quantity": quantity,
-            "executed_at": datetime.now(timezone.utc).isoformat(),
+            "executed_at": datetime.now(UTC).isoformat(),
             "sequence": manager.next_sequence(topic),
         },
     )

@@ -85,17 +85,19 @@ class OrderBook:
             # it can never rest and never needs an unbounded price.
             limit_price = PRICE_MAX if order.action == Action.buy else PRICE_MIN
 
-        if order.time_in_force == TimeInForce.fok:
-            # Known edge case: this counts aggregate resting quantity without
-            # regard to ownership, but matching itself skips same-owner
-            # resting orders via self-trade prevention. A FOK order that only
-            # clears this precheck because of same-owner liquidity can still
-            # come back partially filled.
-            if self._available_quantity(order.action, limit_price) < order.quantity:
-                # remaining_quantity is "still resting," not "unfilled" — a
-                # cancelled order rests nothing, so this must be 0 for the
-                # same reason every other terminal/non-resting path below is.
-                return OrderResult(order.order_id, OrderStatus.cancelled, [], 0)
+        # Known edge case: this counts aggregate resting quantity without
+        # regard to ownership, but matching itself skips same-owner resting
+        # orders via self-trade prevention. A FOK order that only clears this
+        # precheck because of same-owner liquidity can still come back
+        # partially filled.
+        if (
+            order.time_in_force == TimeInForce.fok
+            and self._available_quantity(order.action, limit_price) < order.quantity
+        ):
+            # remaining_quantity is "still resting," not "unfilled" — a
+            # cancelled order rests nothing, so this must be 0 for the same
+            # reason every other terminal/non-resting path below is.
+            return OrderResult(order.order_id, OrderStatus.cancelled, [], 0)
 
         fills = self._match(order, limit_price)
         filled_qty = sum(fill.quantity for fill in fills)

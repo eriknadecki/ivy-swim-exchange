@@ -41,7 +41,7 @@ class ConnectionManager:
         for websocket in list(self._topic_subscribers.get(topic, ())):
             try:
                 await websocket.send_json(message)
-            except Exception:
+            except Exception:  # noqa: BLE001 — any send failure means a dead socket; disconnect regardless of cause
                 self.disconnect(websocket)
 
     def broadcast(self, topic: str, message: dict) -> None:
