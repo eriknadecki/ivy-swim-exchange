@@ -1,0 +1,28 @@
+# Fly.io app config. App name is placeholder — `fly launch` will prompt to
+# pick a real (globally unique) one and rewrite this file.
+app = "ivy-swim-exchange-api"
+primary_region = "iad"
+
+[build]
+
+[deploy]
+  release_command = "alembic upgrade head"
+
+[env]
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # The matching engine's order books and the WebSocket connection manager
+  # both live in a single process's memory (see app/core/deps.py) — this
+  # must run as exactly one always-on machine. Scale-to-zero or a second
+  # instance would silently split or wipe the order book.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
